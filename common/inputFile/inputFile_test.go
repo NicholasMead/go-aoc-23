@@ -1,4 +1,4 @@
-package inputfile
+package inputFile
 
 import (
 	"errors"
@@ -69,12 +69,15 @@ func TestReadInputFile(t *testing.T) {
 
 			if err == nil {
 				t.Fatal("Did not panic")
-			} else if e := err.(error); e != nil {
-				if !errors.Is(os.ErrNotExist, e) {
-					t.Fatalf("Wrong panic error, %v", err)
-				}
 			} else {
-				t.Fatalf("Panic not an error?, %v", err)
+				switch err := err.(type) {
+				case error:
+					if !errors.Is(os.ErrNotExist, err) {
+						t.Fatalf("Wrong panic error %v", err)
+					}
+				default:
+					t.Fatalf("Panic not an error! %v", err)
+				}
 			}
 		}()
 

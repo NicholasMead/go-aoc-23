@@ -1,24 +1,34 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"os"
+
+	"github.com/NicholasMead/go-aoc-23/common/inputFile"
 )
 
+var inputPath = "./_template/input.txt"
+var samplePath = "./_template/sample.txt"
+
 func main() {
-	var input string
-
-	if file, err := os.OpenFile("./input.txt"); err != nil {
-		bufio.NewReader(file).rea
-
+	args := os.Args[1:]
+	path := inputPath
+	if len(args) > 0 {
+		switch args[0] {
+		case "sample":
+			path = samplePath
+		case "input":
+			path = inputPath
+		default:
+			path = args[1]
+		}
 	}
-	input, err := bufio.Reader(os.ReadFile("./input.txt"))
-	if err != nil {
-		panic(err)
-	}
 
-	fmt.Println(input)
+	input := inputFile.ReadInputFile(path)
+
+	for _, line := range input {
+		fmt.Println(line)
+	}
 	fmt.Printf("Part 1: %v\n", part1(input))
 	fmt.Printf("Part 2: %v\n", part2(input))
 }

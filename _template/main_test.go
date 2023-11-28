@@ -1,18 +1,19 @@
 package main
 
 import (
-	"os"
 	"testing"
+
+	"github.com/NicholasMead/go-aoc-23/common/inputFile"
 )
 
 func getTestInput() any {
-	input, err:= os.ReadFile() 
+	return inputFile.ReadInputFile("./sample.txt")
 }
 
 func TestPart1(t *testing.T) {
-
+	getTestInput()
 }
 
 func TestPart2(t *testing.T) {
-
+	getTestInput()
 }
