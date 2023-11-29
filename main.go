@@ -14,48 +14,52 @@ import (
 	"time"
 )
 
-type flags struct {
+type options struct {
 	year, day int
 	session   string
 }
 
-func main() {
-	f := flags{}
-	flag.IntVar(&f.day, "d", -1, "Override day")
-	flag.IntVar(&f.year, "y", -1, "Override year")
-	flag.StringVar(&f.session, "s", "", "Override session key")
-	flag.Parse()
-
-	day, year := parseDayYearFlags(f)
-
-	folderName := fmt.Sprintf("./y%vd%v", year-2000, day)
-
-	copyTemplateFolder(folderName)
-	getInput(day, year, f.session, path.Join(folderName, "input.txt"))
-	replaceTemplateItems(folderName)
+func (opts options) getTargetFolder() string {
+	return fmt.Sprintf("./y%vd%v", opts.year-2000, opts.day)
 }
 
-func parseDayYearFlags(f flags) (day, year int) {
-	now := time.Now()
-	day, year = f.day, f.year
+func main() {
+	opts := options{}
+	applyEnv(&opts)
+	applyFlags(&opts)
+	applySystemTime(&opts)
 
-	if now.Month() != 12 && day == -1 || year == -1 {
+	targetFolder := opts.getTargetFolder()
+
+	copyTemplateFolder(targetFolder)
+
+	if opts.session != "" {
+		getInput(opts.day, opts.year, opts.session, targetFolder)
+	} else {
+		fmt.Println("Unable to retrieve input file (No session key), use flag -s or 'session' key in .env file to include your advent of code session key.")
+	}
+
+	replaceTemplateItems(targetFolder)
+}
+
+func applySystemTime(opts *options) {
+	now := time.Now()
+
+	if now.Month() != 12 && opts.day == 0 || opts.year == 0 {
 		log.Fatalln("Its not advent-of-code month. Use arguments -y <year> -d <day> to specify which day you want to create.")
 	}
 
-	if year == -1 {
-		year = now.Year()
-	} else if year < 2015 {
-		log.Fatalf("Advent of code started in 2015, year value %v is out of range.\n", year)
+	if opts.year == 0 {
+		opts.year = now.Year()
+	} else if opts.year < 2015 {
+		log.Fatalf("Advent of code started in 2015, year value %v is out of range.\n", opts.year)
 	}
 
-	if day == -1 {
-		day = now.Day()
-	} else if day <= 0 || day > 25 {
-		log.Fatalf("Advent of code runs 1st - 25th December, day value %v is out of range.\n", day)
+	if opts.day == 0 {
+		opts.day = now.Day()
+	} else if opts.day <= 0 || opts.day > 25 {
+		log.Fatalf("Advent of code runs 1st - 25th December, day value %v is out of range.\n", opts.day)
 	}
-
-	return
 }
 
 func copyTemplateFolder(dest string) {
@@ -79,7 +83,7 @@ func copyTemplateFolder(dest string) {
 	}
 }
 
-func getInput(day, year int, session string, dest string) {
+func getInput(day, year int, session, targetFolder string) {
 	var (
 		sessionCookie = http.Cookie{Name: "session", Value: session}
 		jar, _        = cookiejar.New(nil)
@@ -101,6 +105,7 @@ func getInput(day, year int, session string, dest string) {
 	}
 	defer resp.Body.Close()
 
+	dest := path.Join(targetFolder, "input.txt")
 	file, err := os.OpenFile(dest, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, os.ModePerm)
 	if err != nil {
 		panic(err)
@@ -153,5 +158,52 @@ func replaceTemplateItems(folderName string) {
 	for _, line := range lines {
 		line = strings.ReplaceAll(line, "./_template", folderName) + "\n"
 		writer.WriteString(line)
+	}
+}
+
+func applyFlags(opts *options) {
+	f := options{}
+	flag.IntVar(&f.day, "d", 0, "Override day")
+	flag.IntVar(&f.year, "y", 0, "Override year")
+	flag.StringVar(&f.session, "s", "", "Override session key")
+	flag.Parse()
+
+	if f.day != 0 {
+		opts.day = f.day
+	}
+	if f.year != 0 {
+		opts.year = f.year
+	}
+	if f.session != "" {
+		opts.session = f.session
+	}
+}
+
+func applyEnv(opts *options) {
+	file, err := os.ReadFile("./.env")
+	if err != nil {
+		if err == os.ErrNotExist {
+			return //.env file is optional
+		}
+		panic(err)
+	}
+
+	content := string(file)
+	for _, line := range strings.Split(content, "\n") {
+		if line == "" {
+			continue
+		}
+
+		keyValue := strings.Split(line, "=")
+		if len(keyValue) == 2 {
+			switch keyValue[0] {
+			case "session":
+				opts.session = keyValue[1]
+			default:
+				fmt.Println("Unsupported .env key:", keyValue[0])
+			}
+		} else {
+			panic("Invalid env file")
+		}
 	}
 }
