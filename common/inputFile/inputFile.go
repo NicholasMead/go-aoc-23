@@ -2,17 +2,7 @@ package inputFile
 
 import (
 	"bufio"
-	"os"
 )
-
-type file interface {
-	Read([]byte) (int, error)
-	Close() error
-}
-
-var os_open = func(path string) (file, error) {
-	return os.Open(path)
-}
 
 func ReadInputFile(filePath string) []string {
 	file, err := os_open(filePath)
