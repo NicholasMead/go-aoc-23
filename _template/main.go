@@ -26,17 +26,14 @@ func main() {
 
 	input := inputFile.ReadInputFile(path)
 
-	for _, line := range input {
-		fmt.Println(line)
-	}
 	fmt.Printf("Part 1: %v\n", part1(input))
 	fmt.Printf("Part 2: %v\n", part2(input))
 }
 
-func part1(input any) any {
+func part1(input []string) any {
 	return "_"
 }
 
-func part2(input any) any {
+func part2(input []string) any {
 	return "_"
 }
