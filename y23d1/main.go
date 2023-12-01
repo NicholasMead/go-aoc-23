@@ -50,23 +50,19 @@ func extract(line string) int {
 		num = (num * 10) + num
 		return num
 
+	default:
+		numString = string(numString[0]) +
+			string(numString[len(numString)-1])
+		fallthrough
+
 	case 2:
 		num, err := strconv.ParseInt(numString, 10, 32)
 		if err != nil {
 			panic(err)
 		}
 		return int(num)
-
-	default:
-		numString = string(numString[0]) +
-			string(numString[len(numString)-1])
-
-		num, err := strconv.ParseInt(numString, 10, 32)
-		if err != nil {
-			panic(err)
-		}
-		return int(num)
 	}
+
 }
 
 func part1(input []string) any {
