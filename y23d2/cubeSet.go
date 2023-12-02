@@ -1,33 +1,31 @@
 package main
 
 import (
-	"fmt"
-	"regexp"
 	"strconv"
+	"strings"
 )
 
 type cubeSet struct {
 	red, green, blue int
 }
 
-func parseCubeSet(game string) cubeSet {
-	set := cubeSet{}
-
-	for _, colour := range []struct {
-		word string
-		val  *int
-	}{
-		{"red", &set.red},
-		{"green", &set.green},
-		{"blue", &set.blue},
-	} {
-		regx := regexp.MustCompile(fmt.Sprintf(`\d+ %v`, colour.word))
-		match := regx.FindString(game)
-		if match != "" {
-			val := regexp.MustCompile(`\d+`).FindString(match)
-			*colour.val, _ = strconv.Atoi(val)
-		}
+func cubeSetFromRoundString(round string) (set cubeSet) {
+	partMap := map[string]*int{
+		"red":   &set.red,
+		"green": &set.green,
+		"blue":  &set.blue,
 	}
 
-	return set
+	// example:
+	//   round:     "3 blue, 4 red"
+	//   cubes:     ["3 blue","4 red"]
+	//   cubeParts: ["3","blue"]
+	
+	cubes := strings.Split(round, ", ")
+	for _, cube := range cubes {
+		cubeParts := strings.Split(cube, " ")
+		name, val := cubeParts[1], cubeParts[0]
+		*partMap[name], _ = strconv.Atoi(val)
+	}
+	return
 }
