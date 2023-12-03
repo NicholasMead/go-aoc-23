@@ -10,8 +10,15 @@ type schematic struct {
 }
 
 type part struct {
-	v          int
+	value      int
 	start, end coord
+}
+
+func (p part) inRange(coord coord) bool {
+	return p.start[0]-1 <= coord[0] &&
+		p.start[1]-1 <= coord[1] &&
+		p.end[0]+1 >= coord[0] &&
+		p.end[1]+1 >= coord[1]
 }
 
 type gear [2]int
@@ -33,7 +40,7 @@ func parseScematic(doc []string) schematic {
 
 		for x, r := range line {
 
-			if v, ok := strconv.Atoi(string(r)); ok == nil {
+			if v, err := strconv.Atoi(string(r)); err == nil {
 				if current == nil {
 					current = &part{
 						v,
@@ -41,8 +48,8 @@ func parseScematic(doc []string) schematic {
 						coord{x, y},
 					}
 				} else {
-					current.v *= 10
-					current.v += v
+					current.value *= 10
+					current.value += v
 					current.end = coord{x, y}
 				}
 			} else {
@@ -70,13 +77,7 @@ func (s *schematic) validParts() []part {
 
 	for coord := range s.symbols {
 		for _, p := range s.parts {
-
-			match := p.start[0]-1 <= coord[0] &&
-				p.end[0]+1 >= coord[0] &&
-				p.start[1]-1 <= coord[1] &&
-				p.end[1]+1 >= coord[1]
-
-			if match {
+			if p.inRange(coord) {
 				parts[p] = new(interface{})
 			}
 		}
@@ -98,19 +99,13 @@ func (s *schematic) gears() (gears []gear) {
 		parts := []part{}
 
 		for _, p := range s.parts {
-
-			match := p.start[0]-1 <= coord[0] &&
-				p.end[0]+1 >= coord[0] &&
-				p.start[1]-1 <= coord[1] &&
-				p.end[1]+1 >= coord[1]
-
-			if match {
+			if p.inRange(coord) {
 				parts = append(parts, p)
 			}
 		}
 
 		if len(parts) == 2 {
-			gears = append(gears, gear{parts[0].v, parts[1].v})
+			gears = append(gears, gear{parts[0].value, parts[1].value})
 		}
 	}
 	return

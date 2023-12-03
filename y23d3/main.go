@@ -35,7 +35,7 @@ func part1(input []string) any {
 	ans := 0
 
 	for _, part := range s.validParts() {
-		ans += part.v
+		ans += part.value
 	}
 
 	return ans
