@@ -32,9 +32,9 @@ func applyFlags(opts *options) {
 		opts.year = f.year
 
 		// Handle short year formats (Y2K YOLO)
-		if year < 50 {
+		if f.year < 50 {
 			opts.year += 2000
-		} else if year < 99 {
+		} else if f.year < 99 {
 			opts.year += 1900
 		}
 	}
@@ -46,7 +46,7 @@ func applyFlags(opts *options) {
 func applyEnv(opts *options) {
 	file, err := os.ReadFile("./.env")
 	if err != nil {
-		if err == os.IsNotExist(err) {
+		if os.IsNotExist(err) {
 			return //.env file is optional
 		} else {
 			panic(err)
@@ -75,7 +75,6 @@ func applyEnv(opts *options) {
 
 func applySystemTime(opts *options) {
 	now := time.Now()
-	fmt.Println(now)
 
 	if now.Month() != 12 && (opts.day == 0 || opts.year == 0) {
 		log.Fatalln("Its not advent-of-code month. Use arguments -y <year> -d <day> to specify which day you want to create.")

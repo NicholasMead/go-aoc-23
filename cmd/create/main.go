@@ -36,7 +36,7 @@ func main() {
 func createTargetFolderFromTemplate(dest string) {
 	os.Mkdir(dest, os.ModePerm)
 
-	if dirents, err := os.ReadDir("./_template"); err != nil {
+	if dirents, err := os.ReadDir("./cmd/create/template"); err != nil {
 		panic(err)
 	} else {
 		for _, direct := range dirents {
@@ -44,7 +44,7 @@ func createTargetFolderFromTemplate(dest string) {
 				continue
 			}
 
-			data, err := os.ReadFile(path.Join("./_template", direct.Name()))
+			data, err := os.ReadFile(path.Join("./cmd/create/template", direct.Name()))
 			if err != nil {
 				panic(err)
 			}
