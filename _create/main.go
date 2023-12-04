@@ -19,15 +19,18 @@ func main() {
 
 	targetFolder := opts.getTargetFolder()
 
-	createTargetFolderFromTemplate(targetFolder)
+	if _, err := os.Open(targetFolder); err != os.ErrNotExist {
+		fmt.Println("Folder already exists, delete folder to re-generate.")
+	} else {
+		createTargetFolderFromTemplate(targetFolder)
+		replaceTemplatePlaceholders(targetFolder)
+	}
 
 	if opts.session != "" {
 		downloadDailyInput(opts.day, opts.year, opts.session, targetFolder)
 	} else {
 		fmt.Println("Unable to retrieve input file (No session key), use flag -s or 'session' key in .env file to include your advent of code session key.")
 	}
-
-	replaceTemplatePlaceholders(targetFolder)
 }
 
 func createTargetFolderFromTemplate(dest string) {

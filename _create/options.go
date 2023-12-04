@@ -67,8 +67,9 @@ func applyEnv(opts *options) {
 
 func applySystemTime(opts *options) {
 	now := time.Now()
+	fmt.Println(now)
 
-	if now.Month() != 12 && opts.day == 0 || opts.year == 0 {
+	if now.Month() != 12 && (opts.day == 0 || opts.year == 0) {
 		log.Fatalln("Its not advent-of-code month. Use arguments -y <year> -d <day> to specify which day you want to create.")
 	}
 
