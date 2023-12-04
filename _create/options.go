@@ -20,16 +20,23 @@ func (opts options) getTargetFolder() string {
 
 func applyFlags(opts *options) {
 	f := options{}
-	flag.IntVar(&f.day, "d", 0, "Override day")
-	flag.IntVar(&f.year, "y", 0, "Override year")
+	flag.IntVar(&f.day, "d", -1, "Override day")
+	flag.IntVar(&f.year, "y", -1, "Override year")
 	flag.StringVar(&f.session, "s", "", "Override session key")
 	flag.Parse()
 
-	if f.day != 0 {
+	if f.day != -1 {
 		opts.day = f.day
 	}
-	if f.year != 0 {
+	if f.year != -1 {
 		opts.year = f.year
+
+		// Handle short year formats (Y2K YOLO)
+		if year < 50 {
+			opts.year += 2000
+		} else if year < 99 {
+			opts.year += 1900
+		}
 	}
 	if f.session != "" {
 		opts.session = f.session
@@ -39,10 +46,11 @@ func applyFlags(opts *options) {
 func applyEnv(opts *options) {
 	file, err := os.ReadFile("./.env")
 	if err != nil {
-		if err == os.ErrNotExist {
+		if err == os.IsNotExist(err) {
 			return //.env file is optional
+		} else {
+			panic(err)
 		}
-		panic(err)
 	}
 
 	content := string(file)

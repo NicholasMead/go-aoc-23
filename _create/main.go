@@ -19,7 +19,7 @@ func main() {
 
 	targetFolder := opts.getTargetFolder()
 
-	if _, err := os.Open(targetFolder); err != os.ErrNotExist {
+	if _, err := os.Stat(targetFolder); !os.IsNotExist(err) {
 		fmt.Println("Folder already exists, delete folder to re-generate.")
 	} else {
 		createTargetFolderFromTemplate(targetFolder)
