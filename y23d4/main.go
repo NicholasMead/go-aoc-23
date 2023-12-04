@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/NicholasMead/go-aoc-23/common"
 	"github.com/NicholasMead/go-aoc-23/common/inputFile"
 )
 
@@ -11,23 +12,28 @@ var inputPath = "./y23d4/input.txt"
 var samplePath = "./y23d4/sample.txt"
 
 func main() {
-	args := os.Args[1:]
-	path := inputPath
-	if len(args) > 0 {
-		switch args[0] {
-		case "sample":
-			path = samplePath
-		case "input":
-			path = inputPath
-		default:
-			path = args[1]
+	var p1, p2 any = "", ""
+	d := common.Timer(func() {
+		args := os.Args[1:]
+		path := inputPath
+		if len(args) > 0 {
+			switch args[0] {
+			case "sample":
+				path = samplePath
+			case "input":
+				path = inputPath
+			default:
+				path = args[1]
+			}
 		}
-	}
 
-	input := inputFile.ReadInputFile(path)
+		input := inputFile.ReadInputFile(path)
 
-	fmt.Printf("Part 1: %v\n", part1(input))
-	fmt.Printf("Part 2: %v\n", part2(input))
+		p1, p2 = part1(input), part2(input)
+	})
+	fmt.Printf("Part 1: %v\n", p1)
+	fmt.Printf("Part 2: %v\n", p2)
+	fmt.Printf("Time: %vus\n", d.Microseconds())
 }
 
 func part1(input []string) any {

@@ -11,11 +11,19 @@ func getTestInput() []string {
 }
 
 func TestPart1(t *testing.T) {
-	i := getTestInput()
-	part1(i)
+	input := getTestInput()
+	ans := part1(input)
+
+	if ans != 198 {
+		t.Fatal("expected 198 got", ans)
+	}
 }
 
 func TestPart2(t *testing.T) {
-	i := getTestInput()
-	part2(i)
+	input := getTestInput()
+	ans := part2(input)
+
+	if ans != 230 {
+		t.Fatal("expected 230 got", ans)
+	}
 }
