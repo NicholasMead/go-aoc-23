@@ -52,7 +52,7 @@ func TestMapping(t *testing.T) {
 	// })
 }
 
-func TestAlomac(t *testing.T) {
+func TestAlamac(t *testing.T) {
 	input := inputFile.ReadInputFile("./sample.txt")
 	// Seed 79, soil 81, fertilizer 81, water 81, light 74, temperature 78, humidity 78, location 82.
 	// Seed 14, soil 14, fertilizer 53, water 49, light 42, temperature 42, humidity 43, location 43.
