@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"math"
 	"os"
-	"strconv"
-	"strings"
 
 	"github.com/NicholasMead/go-aoc-23/common/inputFile"
 )
@@ -33,42 +31,56 @@ func main() {
 	fmt.Printf("Part 2: %v\n", part2(input))
 }
 
-type box [3]int
-
-func (b box) min() (min int) {
+func min(values ...int) int {
 	m := math.MaxInt
-
-	for _, v := range b {
+	for _, v := range values {
 		if v < m {
 			m = v
 		}
 	}
-
 	return m
 }
 
-func parse(dim string) (out box) {
-	for i := range [2]struct{}{} {
-		index := strings.IndexRune(dim, 'x')
-		out[i], _ = strconv.Atoi(dim[:index])
-		dim = dim[index+1:]
+func sum(values ...int) (s int) {
+	for _, v := range values {
+		s += v
 	}
-	out[2], _ = strconv.Atoi(dim)
 	return
 }
 
 func part1(input []string) any {
 	total := 0
 	for _, line := range input {
-		box := parse(line)
+		sides := parse(line).Sides()
+		area := 0
+		slack := math.MaxInt
 
-		area := 2 * (box[0]*box[1] + box[1]*box[2] + box[2]*box[0])
-		total += area
-		total += box.min()
+		for _, s := range sides {
+			area += 2 * s.Area()
+			if s.Area() < slack {
+				slack = s.Area()
+			}
+		}
+
+		total += area + slack
 	}
 	return total
 }
 
 func part2(input []string) any {
-	return "_"
+	total := 0
+	for _, line := range input {
+		box := parse(line)
+		sides := box.Sides()
+		ribbon := math.MaxInt
+
+		for _, s := range sides {
+			if s.Perimeter() < ribbon {
+				ribbon = s.Perimeter()
+			}
+		}
+
+		total += ribbon + box.Volume()
+	}
+	return total
 }
