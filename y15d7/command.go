@@ -6,26 +6,21 @@ import (
 )
 
 type Command interface {
-	TryExecute(Register) (success bool)
+	Wire
+	Dest() string
 }
 
 func ParseCmd(line string) Command {
 	parts := strings.Split(line, " -> ")
-	input, dest := parts[0], parts[1]
+	input, dest := parts[0], dest(parts[1])
 
 	inParts := strings.Split(input, " ")
 	switch len(inParts) {
 	case 1:
-		return write{
-			src:  ParseWire(inParts[0]),
-			dest: dest,
-		}
+		return write{ParseWire(inParts[0]), dest}
 
 	case 2:
-		return not{
-			src:  ParseWire(inParts[1]),
-			dest: dest,
-		}
+		return not{ParseWire(inParts[1]), dest}
 
 	case 3:
 		switch inParts[1] {
@@ -56,97 +51,73 @@ func ParseCmd(line string) Command {
 	panic(line)
 }
 
-type write struct {
-	src  Wire
-	dest string
+type dest string
+
+func (w dest) Dest() string {
+	return string(w)
 }
 
-func (cmd write) TryExecute(r Register) bool {
-	if v, ok := cmd.src.Value(r); ok {
-		r[cmd.dest] = v
-		return true
-	}
-	return false
+type write struct {
+	a Wire
+	dest
+}
+
+func (cmd write) Value(r ReadRegister) Value {
+	return cmd.a.Value(r)
 }
 
 type and struct {
 	a, b Wire
-	dest string
+	dest
 }
 
-func (cmd and) TryExecute(r Register) (ok bool) {
-	var aa, bb Value
+func (cmd and) Value(r ReadRegister) Value {
+	a := cmd.a.Value(r)
+	b := cmd.b.Value(r)
 
-	if aa, ok = cmd.a.Value(r); !ok {
-		return false
-	}
-	if bb, ok = cmd.b.Value(r); !ok {
-		return false
-	}
-
-	r[cmd.dest] = aa & bb
-	return true
+	return a & b
 }
 
 type or struct {
 	a, b Wire
-	dest string
+	dest
 }
 
-func (cmd or) TryExecute(r Register) (ok bool) {
-	var aa, bb Value
+func (cmd or) Value(r ReadRegister) Value {
+	aa := cmd.a.Value(r)
+	bb := cmd.b.Value(r)
 
-	if aa, ok = cmd.a.Value(r); !ok {
-		return false
-	}
-	if bb, ok = cmd.b.Value(r); !ok {
-		return false
-	}
-
-	r[cmd.dest] = aa | bb
-	return true
+	return aa | bb
 }
 
 type lShift struct {
-	src  Wire
-	i    int
-	dest string
+	src Wire
+	i   int
+	dest
 }
 
-func (cmd lShift) TryExecute(r Register) bool {
-	if value, ok := cmd.src.Value(r); ok {
-		r[cmd.dest] = value << Value(cmd.i)
-		return true
-	} else {
-		return false
-	}
+func (cmd lShift) Value(r ReadRegister) Value {
+	value := cmd.src.Value(r)
+	return value << Value(cmd.i)
 }
 
 type rShift struct {
-	src  Wire
-	i    int
-	dest string
+	src Wire
+	i   int
+	dest
 }
 
-func (cmd rShift) TryExecute(r Register) bool {
-	if value, ok := cmd.src.Value(r); ok {
-		r[cmd.dest] = value >> Value(cmd.i)
-		return true
-	} else {
-		return false
-	}
+func (cmd rShift) Value(r ReadRegister) Value {
+	value := cmd.src.Value(r)
+	return value >> Value(cmd.i)
 }
 
 type not struct {
-	src  Wire
-	dest string
+	src Wire
+	dest
 }
 
-func (cmd not) TryExecute(r Register) bool {
-	if value, ok := cmd.src.Value(r); ok {
-		r[cmd.dest] = value ^ 0xffff
-		return true
-	} else {
-		return false
-	}
+func (cmd not) Value(r ReadRegister) Value {
+	value := cmd.src.Value(r)
+	return value ^ 0xffff
 }

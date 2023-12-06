@@ -1,9 +1,11 @@
 package main
 
-import "strconv"
+import (
+	"strconv"
+)
 
 type Wire interface {
-	Value(Register) (value Value, ok bool)
+	Value(ReadRegister) (value Value)
 }
 
 func ParseWire(s string) Wire {
@@ -14,15 +16,14 @@ func ParseWire(s string) Wire {
 	}
 }
 
-type staticWire Value
+type staticWire int
 
-func (static staticWire) Value(_ Register) (Value, bool) {
-	return Value(static), true
+func (static staticWire) Value(_ ReadRegister) Value {
+	return Value(static)
 }
 
 type dynamicWire string
 
-func (dynamics dynamicWire) Value(r Register) (Value, bool) {
-	v, ok := r[string(dynamics)]
-	return v, ok
+func (dynamic dynamicWire) Value(r ReadRegister) Value {
+	return r.Value(string(dynamic))
 }

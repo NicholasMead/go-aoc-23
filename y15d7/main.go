@@ -3,14 +3,14 @@ package main
 import (
 	"fmt"
 	"os"
-	"slices"
 
 	"github.com/NicholasMead/go-aoc-23/common"
 	"github.com/NicholasMead/go-aoc-23/common/inputFile"
 )
 
-var inputPath = "./input.txt"
-// var inputPath = "./y15d7/input.txt"
+// var inputPath = "./input.txt"
+
+var inputPath = "./y15d7/input.txt"
 var samplePath = "./y15d7/sample.txt"
 
 func main() {
@@ -43,57 +43,18 @@ func main() {
 }
 
 func part1(input []Command) any {
-	register := Register{}
-	commands := append([]Command{}, input...)
-	count := 0
+	register := NewRegister(input...)
 
-	for len(commands) > 0 {
-		cmd := commands[0]
-		commands = commands[1:]
-		count++
-
-		if !cmd.TryExecute(register) {
-			commands = append(commands, cmd)
-		}
-	}
-
-	return register["a"]
+	return register.Value("a")
 }
 
 func part2(input []Command) any {
-	register := Register{}
-	commands := append([]Command{}, input...)
+	register := NewRegister(input...)
 
-	for len(commands) > 0 {
-		cmd := commands[0]
-		commands = commands[1:]
+	a := register.Value("a")
 
-		if !cmd.TryExecute(register) {
-			commands = append(commands, cmd)
-		}
-	}
+	register = NewRegister(input...)
+	register.Add(write{staticWire(a), dest("b")})
 
-	register = Register{
-		"b": register["a"],
-	}
-	commands = append([]Command{}, input...)
-	for i, cmd := range commands {
-		switch c := cmd.(type) {
-		case write:
-			if c.dest == "b" {
-				slices.Delete(commands, i, i+1)
-			}
-			break
-		}
-	}
-
-	for len(commands) > 0 {
-		cmd := commands[0]
-		commands = commands[1:]
-
-		if !cmd.TryExecute(register) {
-			commands = append(commands, cmd)
-		}
-	}
-	return register["a"]
+	return register.Value("a")
 }
