@@ -100,7 +100,7 @@ func part1(input []string) any {
 	return len(loop) / 2
 }
 
-func canExit(g grid.Grid, memo map[grid.Coord]bool, X, Y int, start grid.Coord) (result bool) {
+func isBound(g grid.Grid, memo map[grid.Coord]bool, X, Y int, start grid.Coord) (result bool) {
 	// Check memory
 	if exits, found := memo[start]; found {
 		return exits
@@ -119,7 +119,7 @@ func canExit(g grid.Grid, memo map[grid.Coord]bool, X, Y int, start grid.Coord) 
 	// edge cases, literally
 	x, y := start[0], start[1]
 	if x <= 0 || y <= 0 || x >= X-1 || y >= Y-1 {
-		return true
+		return false
 	}
 
 	queue := []grid.Coord{start}
@@ -140,7 +140,7 @@ func canExit(g grid.Grid, memo map[grid.Coord]bool, X, Y int, start grid.Coord) 
 
 			// Check if we're at the edge
 			if mx < 0 || my < 0 || mx >= X || my >= Y {
-				return true
+				return false
 			}
 
 			// Check if valid move
@@ -159,7 +159,7 @@ func canExit(g grid.Grid, memo map[grid.Coord]bool, X, Y int, start grid.Coord) 
 
 	// If we made it here, we ran out of un-explored spaces
 	// before we found the edge... No route out!
-	return false
+	return true
 }
 
 func expand(pipe rune) (out [3][3]rune) {
@@ -259,19 +259,23 @@ func part2(input []string) any {
 		}
 	}
 
-	// find all positions (not part of the pipe) that have paths to the edge (exits)
-	exits := map[grid.Coord]bool{}
-	for xx := 0; xx < XX; xx++ {
-		for yy := 0; yy < YY; yy++ {
-			coord := grid.Coord{xx, yy}
-			pipe := gg.At(coord)
-			if pipe != '.' {
-				continue
-			}
+	// find all positions (not part of the pipe) that have paths to the edge (bound)
+	bound := map[grid.Coord]bool{}
+	func() {
+		for xx := 0; xx < XX; xx++ {
+			for yy := 0; yy < YY; yy++ {
+				coord := grid.Coord{xx, yy}
+				pipe := gg.At(coord)
+				if pipe != '.' {
+					continue
+				}
 
-			exits[grid.Coord{xx, yy}] = canExit(gg, exits, XX, YY, coord)
+				if isBound(gg, bound, XX, YY, coord) {
+					return // if we found a bound coord, we've memoed them all!
+				}
+			}
 		}
-	}
+	}()
 
 	// cross reference positions in origional x,y grid with exits value from xx,yy
 	ans := 0
@@ -279,9 +283,9 @@ func part2(input []string) any {
 		for y := 0; y < Y; y++ {
 			xx, yy := (x*3)+1, (y*3)+1
 
-			_, inLoop := l[grid.Coord{x, y}]
+			_, onLoop := l[grid.Coord{x, y}]
 
-			if !inLoop && !exits[grid.Coord{xx, yy}] {
+			if !onLoop && bound[grid.Coord{xx, yy}] {
 				ans++
 			}
 		}
