@@ -2,14 +2,13 @@ package springs
 
 import (
 	"fmt"
-	"slices"
 	"strconv"
 	"strings"
 )
 
 type Record []int
 
-func NewRecordFromString(s string) Record {
+func RecordFromString(s string) Record {
 	parts := strings.Split(s, ",")
 	record := make(Record, len(parts))
 
@@ -20,17 +19,22 @@ func NewRecordFromString(s string) Record {
 	return record
 }
 
-func (record Record) DrawHistory() History {
-	history := History("")
+func (record Record) AddOk() Record {
+	n := len(record) - 1
+	copy := record.Copy()
 
-	for _, count := range record {
-		for i := 0; i < count; i++ {
-			history.Add(Failed)
-		}
-		history.Add(Ok)
+	if record[n] != 0 {
+		return append(copy, 0)
+	} else {
+		return copy
 	}
+}
 
-	return history.Normalise()
+func (record Record) AddFail() Record {
+	n := len(record) - 1
+	copy := record.Copy()
+	copy[n]++
+	return copy
 }
 
 func (record Record) String() string {
@@ -41,8 +45,14 @@ func (record Record) String() string {
 	return strings.Join(s, ",")
 }
 
-func (r Record) Normalise() Record {
-	copy := append(Record{}, r...)
-	slices.DeleteFunc(copy, func(i int) bool { return i == 0 })
-	return copy
+func (record Record) Copy() Record {
+	return append(Record{}, record...)
+}
+
+func (record Record) Normalise() Record {
+	n := len(record)
+	if record[n-1] == 0 {
+		return record[:n-1]
+	}
+	return record
 }

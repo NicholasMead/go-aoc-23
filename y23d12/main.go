@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"os"
-	"strconv"
 	"strings"
 
 	"github.com/NicholasMead/go-aoc-23/common"
@@ -31,31 +30,25 @@ func main() {
 
 	d := common.Timer(func() {
 		input := inputFile.ReadInputFile(path)
-		p1, p2 = part1(input), 0 //part2(input)
+		p1, p2 = part1(input), part2(input)
 	})
 
 	fmt.Printf("Part 1: %v\n", p1)
 	fmt.Printf("Part 2: %v\n", p2)
-	fmt.Printf("Time: %vus\n", d.Microseconds())
+	fmt.Printf("Time: %vs\n", d.Seconds())
 }
 
 func part1(input []string) any {
 	ans := 0
 
-	for l, line := range input {
+	for _, line := range input {
 		lineParts := strings.Split(line, " ")
 
 		history := springs.History(lineParts[0])
-		record := springs.NewRecordFromString(lineParts[1])
+		record := springs.RecordFromString(lineParts[1])
 
-		counter := springs.Counter{}
-		counter.History = history
-		counter.Record = record
-
-		count := counter.Count()
-
+		count := springs.CountValid(history, record)
 		ans += count
-		fmt.Printf("(%v/%v): %v [ans = %v]\n", l+1, len(input), count, ans)
 	}
 
 	return ans
@@ -64,25 +57,16 @@ func part1(input []string) any {
 func part2(input []string) any {
 	ans := 0
 
-	for l, line := range input {
+	for _, line := range input {
 		lineParts := strings.Split(line, " ")
-		recordParts := strings.Split(lineParts[1], ",")
 
-		history := springs.History(lineParts[0]).Normalise()
-		record := make(springs.Record, len(recordParts))
-
-		for i, r := range recordParts {
-			record[i], _ = strconv.Atoi(r)
-		}
+		history := springs.History(lineParts[0])
+		record := springs.RecordFromString(lineParts[1])
 
 		history, record = springs.Unfold(history, record)
 
-		fmt.Printf("\n%v\n%v\n", history, record.DrawHistory())
-
-		count := springs.NewHistoryFinder(record).CountValid(history)
+		count := springs.CountValid(history, record)
 		ans += count
-
-		fmt.Printf("(%v/%v): %v [ans = %v]\n", l+1, len(input), count, ans)
 	}
 
 	return ans

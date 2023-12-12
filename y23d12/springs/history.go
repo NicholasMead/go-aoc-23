@@ -2,7 +2,7 @@ package springs
 
 import "strings"
 
-type Result rune
+type Result = byte
 
 var (
 	Ok      Result = '.'
