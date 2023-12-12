@@ -5,17 +5,96 @@ import (
 	"strings"
 )
 
-type History = string
+type historyFinder struct {
+	target Record
+	memo   map[History][]Record
+}
 
-type Result = rune
+func NewHistoryFinder(target Record) *historyFinder {
+	return &historyFinder{
+		target: target,
+		memo: map[History][]Record{
+			"": {{0}},
+		},
+	}
+}
 
-var (
-	Ok      Result = '.'
-	Failed  Result = '#'
-	Unknown Result = '?'
-)
+func (finder *historyFinder) CountValid(template History) int {
+	if records, memo := finder.memo[template]; memo {
+		return len(records)
+	}
 
-type Record []int
+	for h := 0; h < len(template); h++ {
+		prefixRecords := finder.memo[template[0:h]]
+		records := []Record{}
+
+		for _, prefix := range prefixRecords {
+			record := append(Record{}, prefix...)
+			n := len(record) - 1
+			if n == -1 {
+				panic("invalid prefix")
+			}
+
+			switch Result(template[h]) {
+			case Ok:
+				if record[n] != 0 {
+					record = append(record, 0)
+				}
+				records = append(records, record)
+
+			case Failed:
+				record[n]++
+				records = append(records, record)
+
+			case Unknown:
+				okRecord := append(Record{}, record...)
+				if okRecord[n] != 0 {
+					okRecord = append(okRecord, 0)
+				}
+
+				failRecord := append(Record{}, record...)
+				failRecord[n]++
+
+				records = append(records, okRecord, failRecord)
+			}
+		}
+
+		records = slices.DeleteFunc(records, func(r Record) bool {
+			return !isPartial(finder.target, r)
+		})
+
+		finder.memo[template[0:h+1]] = records
+	}
+
+	count := 0
+	for _, candidate := range finder.memo[template] {
+		if candidate[len(candidate)-1] == 0 {
+			candidate = candidate[:len(candidate)-1]
+		}
+
+		if slices.Equal(candidate, finder.target) {
+			count++
+		}
+	}
+	return count
+}
+
+func isPartial(target, candidate Record) bool {
+	if candidate[len(candidate)-1] == 0 {
+		candidate = candidate[:len(candidate)-1]
+	}
+
+	if len(candidate) > len(target) {
+		return false
+	}
+
+	for i := range candidate {
+		if candidate[i] > target[i] {
+			return false
+		}
+	}
+	return true
+}
 
 func CountValid(history History, expected Record) (count int) {
 	queue := []History{history}
@@ -24,10 +103,10 @@ func CountValid(history History, expected Record) (count int) {
 		next := queue[0]
 		queue = queue[1:]
 
-		if strings.ContainsRune(next, Unknown) {
+		if strings.ContainsRune(string(next), rune(Unknown)) {
 			var (
-				ok     = History(strings.Replace(next, string(Unknown), string(Ok), 1))
-				failed = History(strings.Replace(next, string(Unknown), string(Failed), 1))
+				ok     = History(strings.Replace(string(next), string(Unknown), string(Ok), 1))
+				failed = History(strings.Replace(string(next), string(Unknown), string(Failed), 1))
 			)
 			queue = append(queue, ok, failed)
 			continue
@@ -73,7 +152,7 @@ func Unfold(history History, expected Record) (History, Record) {
 	unFoldedExpected := append(Record{}, expected...)
 
 	for i := 0; i < 5; i++ {
-		unfoldedHistory += History(string(Unknown) + history)
+		unfoldedHistory += History(Unknown) + history
 		unFoldedExpected = append(unFoldedExpected, expected...)
 	}
 

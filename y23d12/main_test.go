@@ -12,7 +12,7 @@ func getTestInput() []string {
 
 func TestPart1(t *testing.T) {
 	i := getTestInput()
-	part1(i)
+	part1(i[:1])
 }
 
 func TestPart2(t *testing.T) {

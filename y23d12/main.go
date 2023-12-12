@@ -31,7 +31,7 @@ func main() {
 
 	d := common.Timer(func() {
 		input := inputFile.ReadInputFile(path)
-		p1, p2 = part1(input), part2(input)
+		p1, p2 = part1(input), 0 //part2(input)
 	})
 
 	fmt.Printf("Part 1: %v\n", p1)
@@ -44,19 +44,18 @@ func part1(input []string) any {
 
 	for l, line := range input {
 		lineParts := strings.Split(line, " ")
-		recordParts := strings.Split(lineParts[1], ",")
 
 		history := springs.History(lineParts[0])
-		record := make(springs.Record, len(recordParts))
+		record := springs.NewRecordFromString(lineParts[1])
 
-		for i, r := range recordParts {
-			record[i], _ = strconv.Atoi(r)
-		}
+		counter := springs.Counter{}
+		counter.History = history
+		counter.Record = record
 
-		count := springs.CountValid(history, record)
+		count := counter.Count()
+
 		ans += count
-
-		fmt.Printf("(%v/%v): %v [ans = %v]\n", l, len(input), count, ans)
+		fmt.Printf("(%v/%v): %v [ans = %v]\n", l+1, len(input), count, ans)
 	}
 
 	return ans
@@ -69,7 +68,7 @@ func part2(input []string) any {
 		lineParts := strings.Split(line, " ")
 		recordParts := strings.Split(lineParts[1], ",")
 
-		history := springs.History(lineParts[0])
+		history := springs.History(lineParts[0]).Normalise()
 		record := make(springs.Record, len(recordParts))
 
 		for i, r := range recordParts {
@@ -77,7 +76,10 @@ func part2(input []string) any {
 		}
 
 		history, record = springs.Unfold(history, record)
-		count := springs.CountValid(history, record)
+
+		fmt.Printf("\n%v\n%v\n", history, record.DrawHistory())
+
+		count := springs.NewHistoryFinder(record).CountValid(history)
 		ans += count
 
 		fmt.Printf("(%v/%v): %v [ans = %v]\n", l+1, len(input), count, ans)
