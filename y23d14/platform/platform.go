@@ -3,14 +3,11 @@ package platform
 import "strings"
 
 type Platform interface {
-	Width() int
-	Height() int
-
 	AddRock(Vector, RockType)
 	ApplyTilt(direction Vector)
 	SpinCycle()
 
-	GetRocksOfType(RockType) []Vector
+	NorthWeight() int
 
 	Hash() string
 }
@@ -42,6 +39,11 @@ func LoadPlatform(input []string) Platform {
 		}
 	}
 	return p
+}
+
+func LoadPlatformFromHash(hash string) Platform {
+	input := strings.Split(hash, "\n")
+	return LoadPlatform(input)
 }
 
 func (p *platform) Width() int {
@@ -78,19 +80,19 @@ func (p *platform) ApplyTilt(direction Vector) {
 }
 
 func (p *platform) SpinCycle() {
-	p.ApplyTilt(Vector{0, -1})
-	p.ApplyTilt(Vector{-1, 0})
-	p.ApplyTilt(Vector{0, 1})
-	p.ApplyTilt(Vector{1, 0})
+	p.ApplyTilt(Vector{+0, -1})
+	p.ApplyTilt(Vector{-1, +0})
+	p.ApplyTilt(Vector{+0, +1})
+	p.ApplyTilt(Vector{+1, +0})
 }
 
-func (p *platform) GetRocksOfType(targetType RockType) (out []Vector) {
-	for pos, rock := range p.rocks {
-		if rock.Type() == targetType {
-			out = append(out, pos)
-		}
+func (p *platform) NorthWeight() int {
+	total := 0
+	for _, rock := range p.rocks {
+		dist := p.Height() - rock.Position()[1]
+		total += dist * rock.Weight()
 	}
-	return
+	return total
 }
 
 func (p *platform) String() string {
@@ -101,7 +103,7 @@ func (p *platform) String() string {
 			rock, found := p.rocks[Vector{x, y}]
 
 			if found {
-				platformString += string(rock.Type())
+				platformString += rock.String()
 			} else {
 				platformString += "."
 			}
@@ -109,7 +111,7 @@ func (p *platform) String() string {
 		platformString += "\n"
 	}
 
-	return platformString
+	return strings.TrimSpace(platformString)
 }
 
 func (p *platform) Hash() string {

@@ -37,56 +37,19 @@ func main() {
 	fmt.Printf("Time: %vs\n", d.Seconds())
 }
 
-func NorthWeight(p platform.Platform) int {
-	ans := 0
-	for _, rock := range p.GetRocksOfType(platform.RoundRock) {
-		ans += p.Height() - rock[1]
-	}
-	return ans
-}
-
 func part1(input []string) any {
 	p := platform.LoadPlatform(input)
 	p.ApplyTilt(platform.Vector{0, -1})
-	return NorthWeight(p)
-}
-
-func detectCycle(p platform.Platform) (offset int, period int) {
-	memo := map[string]int{
-		p.Hash(): 0,
-	}
-
-	for i := 1; i < 1_000_000_000; i++ {
-		p.SpinCycle()
-		hash := p.Hash()
-
-		if index, found := memo[hash]; found {
-			return index, i - index
-		} else {
-			memo[hash] = i
-		}
-	}
-
-	panic("No cycle found")
+	return p.NorthWeight()
 }
 
 func part2(input []string) any {
-	p := platform.LoadPlatform(input)
+	generator := NewSpinCycleHashGenerator(platform.LoadPlatform(input))
 
-	offset, cycle := detectCycle(p)
+	goal := 1_000_000_000
+	offset, cycle := DetectCycle(generator, goal)
+	relativePositionAtGoal := offset + ((goal - offset) % cycle)
 
-	current := offset + cycle
-	cap := 1_000_000_000
-
-	//sudo-iterate to close to the cap...
-	for current+cycle <= cap {
-		current += cycle
-	}
-
-	//iterate the last bit
-	for i := 0; i < cap-current; i++ {
-		p.SpinCycle()
-	}
-
-	return NorthWeight(p)
+	p := platform.LoadPlatformFromHash(generator(relativePositionAtGoal))
+	return p.NorthWeight()
 }

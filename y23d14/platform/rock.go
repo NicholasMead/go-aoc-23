@@ -5,7 +5,9 @@ import "errors"
 type Rock interface {
 	Position() Vector
 	Move(Vector) error
-	Type() RockType
+	Weight() int
+
+	String() string
 }
 
 type RockType rune
@@ -44,13 +46,15 @@ func (r rock) Position() Vector {
 	return r.position
 }
 
-func (r rock) Type() RockType {
-	return r.rockType
+func (r rock) String() string {
+	return string(r.rockType)
 }
 
 type roundRock struct {
 	rock
 }
+
+func (r roundRock) Weight() int { return 1 }
 
 func (r roundRock) Move(v Vector) error {
 	nextPos := r.position.Add(v)
@@ -83,6 +87,8 @@ func (r roundRock) Move(v Vector) error {
 type squareRock struct {
 	rock
 }
+
+func (r squareRock) Weight() int { return 0 }
 
 func (r squareRock) Move(v Vector) error {
 	return errors.ErrUnsupported
