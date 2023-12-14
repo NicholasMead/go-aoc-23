@@ -12,10 +12,18 @@ func getTestInput() []string {
 
 func TestPart1(t *testing.T) {
 	i := getTestInput()
-	part1(i)
+	ans := part1(i)
+
+	if ans != 136 {
+		t.Fatal(ans)
+	}
 }
 
 func TestPart2(t *testing.T) {
 	i := getTestInput()
-	part2(i)
+	ans := part2(i)
+
+	if ans != 64 {
+		t.Fatal(ans)
+	}
 }

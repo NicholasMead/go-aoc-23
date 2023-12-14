@@ -7,7 +7,7 @@ import (
 )
 
 func getTestInput() []string {
-	return inputFile.ReadInputFile("./input.txt")
+	return inputFile.ReadInputFile("./sample.txt")
 }
 
 func TestPart1(t *testing.T) {
