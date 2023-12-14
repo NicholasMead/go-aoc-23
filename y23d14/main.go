@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/NicholasMead/go-aoc-23/common"
 	"github.com/NicholasMead/go-aoc-23/common/inputFile"
@@ -35,61 +34,59 @@ func main() {
 
 	fmt.Printf("Part 1: %v\n", p1)
 	fmt.Printf("Part 2: %v\n", p2)
-	fmt.Printf("Time: %vus\n", d.Microseconds())
+	fmt.Printf("Time: %vs\n", d.Seconds())
+}
+
+func NorthWeight(p platform.Platform) int {
+	ans := 0
+	for _, rock := range p.GetRocksOfType(platform.RoundRock) {
+		ans += p.Height() - rock[1]
+	}
+	return ans
 }
 
 func part1(input []string) any {
-	height, width := len(input), len(input[0])
-	p := platform.NewPlatform(height, width)
+	p := platform.LoadPlatform(input)
+	p.ApplyTilt(platform.Vector{0, -1})
+	return NorthWeight(p)
+}
 
-	for y, line := range input {
-		for x, char := range line {
-			if !strings.ContainsRune(platform.RockTypes, char) {
-				continue
-			}
+func detectCycle(p platform.Platform) (offset int, period int) {
+	memo := map[string]int{
+		p.Hash(): 0,
+	}
 
-			p.AddRock(platform.Vector{x, y}, platform.RockType(char))
+	for i := 1; i < 1_000_000_000; i++ {
+		p.SpinCycle()
+		hash := p.Hash()
+
+		if index, found := memo[hash]; found {
+			return index, i - index
+		} else {
+			memo[hash] = i
 		}
 	}
-	fmt.Println(p)
 
-	p.ApplyTilt(platform.Vector{0, -1})
-
-	fmt.Println(p)
-
-	ans := 0
-	for _, rock := range p.GetRocksOfType(platform.RoundRock) {
-		ans += height - rock[1]
-	}
-	return ans
+	panic("No cycle found")
 }
 
 func part2(input []string) any {
-	height, width := len(input), len(input[0])
-	p := platform.NewPlatform(height, width)
+	p := platform.LoadPlatform(input)
 
-	for y, line := range input {
-		for x, char := range line {
-			if !strings.ContainsRune(platform.RockTypes, char) {
-				continue
-			}
+	offset, cycle := detectCycle(p)
 
-			p.AddRock(platform.Vector{x, y}, platform.RockType(char))
-		}
+	current := offset + cycle
+	cap := 1_000_000_000
+
+	//sudo-iterate to close to the cap...
+	for current+cycle <= cap {
+		current += cycle
 	}
 
-	max := 3 //1_000_000_000
-	for i := 0; i < max; i++ {
-		p.ApplyTilt(platform.Vector{0, -1})
-		p.ApplyTilt(platform.Vector{-1, 0})
-		p.ApplyTilt(platform.Vector{0, 1})
-		p.ApplyTilt(platform.Vector{1, 0})
+	//iterate the last bit
+	for i := 0; i < cap-current; i++ {
+		p.SpinCycle()
 	}
-	fmt.Println(p)
 
-	ans := 0
-	for _, rock := range p.GetRocksOfType(platform.RoundRock) {
-		ans += height - rock[1]
-	}
-	return ans
+	return NorthWeight(p)
 }

@@ -1,10 +1,18 @@
 package platform
 
+import "strings"
+
 type Platform interface {
+	Width() int
+	Height() int
+
 	AddRock(Vector, RockType)
 	ApplyTilt(direction Vector)
+	SpinCycle()
 
 	GetRocksOfType(RockType) []Vector
+
+	Hash() string
 }
 
 type platform struct {
@@ -18,6 +26,29 @@ func NewPlatform(height, width int) Platform {
 		width,
 		map[Vector]Rock{},
 	}
+}
+
+func LoadPlatform(input []string) Platform {
+	height, width := len(input), len(input[0])
+	p := NewPlatform(height, width)
+
+	for y, line := range input {
+		for x, char := range line {
+			if !strings.ContainsRune(RockTypes, char) {
+				continue
+			}
+
+			p.AddRock(Vector{x, y}, RockType(char))
+		}
+	}
+	return p
+}
+
+func (p *platform) Width() int {
+	return p.width
+}
+func (p *platform) Height() int {
+	return p.height
 }
 
 func (p *platform) AddRock(position Vector, rockType RockType) {
@@ -46,6 +77,13 @@ func (p *platform) ApplyTilt(direction Vector) {
 	}
 }
 
+func (p *platform) SpinCycle() {
+	p.ApplyTilt(Vector{0, -1})
+	p.ApplyTilt(Vector{-1, 0})
+	p.ApplyTilt(Vector{0, 1})
+	p.ApplyTilt(Vector{1, 0})
+}
+
 func (p *platform) GetRocksOfType(targetType RockType) (out []Vector) {
 	for pos, rock := range p.rocks {
 		if rock.Type() == targetType {
@@ -57,7 +95,6 @@ func (p *platform) GetRocksOfType(targetType RockType) (out []Vector) {
 
 func (p *platform) String() string {
 	platformString := ""
-	platformString += "********\n"
 
 	for y := 0; y < p.height; y++ {
 		for x := 0; x < p.width; x++ {
@@ -71,7 +108,10 @@ func (p *platform) String() string {
 		}
 		platformString += "\n"
 	}
-	platformString += "********\n"
 
 	return platformString
+}
+
+func (p *platform) Hash() string {
+	return p.String()
 }
