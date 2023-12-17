@@ -64,7 +64,7 @@ func FindOptimumPath(grid crucible.Grid, start crucible.Crucible) Path {
 	var (
 		target = grid.Max()
 		queue  = []*Path{{Crucible: start, From: nil}}
-		memo   = map[crucible.Crucible]int{}
+		memo   = map[crucible.Crucible]*Path{}
 
 		current *Path = nil
 		final   *Path = nil
@@ -88,10 +88,8 @@ func FindOptimumPath(grid crucible.Grid, start crucible.Crucible) Path {
 			}
 
 			cost := current.Cost + grid[move.Position]
-			if mem, found := memo[move]; found && cost >= mem {
+			if prev, found := memo[move]; found && cost >= prev.Cost {
 				continue
-			} else {
-				memo[move] = cost
 			}
 
 			next := &Path{
@@ -100,6 +98,8 @@ func FindOptimumPath(grid crucible.Grid, start crucible.Crucible) Path {
 				Cost:     cost,
 				Weight:   cost + move.Position.Dist(target),
 			}
+			memo[move] = next
+
 			index := slices.IndexFunc(queue, func(queued *Path) bool {
 				return queued.Weight > next.Weight
 			})
