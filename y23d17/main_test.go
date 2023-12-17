@@ -26,7 +26,7 @@ func TestPart2(t *testing.T) {
 	grid := NewGrid(i)
 	ans := part2(grid)
 
-	if ans != "_" {
+	if ans != 94 {
 		t.Fatal(ans)
 	}
 }
@@ -36,7 +36,7 @@ func TestPart2Sample2(t *testing.T) {
 	grid := NewGrid(i)
 	ans := part2(grid)
 
-	if ans != "_" {
+	if ans != 71 {
 		t.Fatal(ans)
 	}
 }
