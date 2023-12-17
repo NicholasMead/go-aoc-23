@@ -21,3 +21,6 @@
 go.work
 
 .env
+
+# Avent of code
+input.txt
