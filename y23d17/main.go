@@ -78,7 +78,6 @@ func FindOptimumPath(grid crucible.Grid, start crucible.Crucible) Path {
 			break
 		}
 
-		candidates := []*Path{}
 		moves := current.Crucible.Moves()
 		for _, move := range moves {
 			if _, found := grid[move.Position]; !found {
@@ -89,27 +88,27 @@ func FindOptimumPath(grid crucible.Grid, start crucible.Crucible) Path {
 			}
 
 			cost := current.Cost + grid[move.Position]
-			candidates = append(candidates, &Path{
+			if mem, found := memo[move]; found && cost >= mem {
+				continue
+			} else {
+				memo[move] = cost
+			}
+
+			next := &Path{
 				Crucible: move,
 				From:     current,
 				Cost:     cost,
 				Weight:   cost + move.Position.Dist(target),
-			})
-		}
-
-		for _, next := range candidates {
-			if mem, found := memo[next.Crucible]; found && next.Cost >= mem {
-				continue
-			} else {
-				memo[next.Crucible] = next.Cost
 			}
-
-			queue = append(queue, next)
+			index := slices.IndexFunc(queue, func(queued *Path) bool {
+				return queued.Weight > next.Weight
+			})
+			if index != -1 {
+				queue = slices.Insert(queue, index, next)
+			} else {
+				queue = append(queue, next)
+			}
 		}
-
-		slices.SortFunc(queue, func(a, b *Path) int {
-			return a.Weight - b.Weight
-		})
 	}
 
 	if final == nil {
