@@ -12,7 +12,9 @@ func getTestInput() []string {
 
 func TestPart1(t *testing.T) {
 	i := getTestInput()
-	ans := part1(i)
+	workflow, inGears := parse(i)
+
+	ans := part1(workflow, inGears)
 
 	if ans != 19114 {
 		t.Fatal(ans)
@@ -21,7 +23,9 @@ func TestPart1(t *testing.T) {
 
 func TestPart2(t *testing.T) {
 	i := getTestInput()
-	ans := part2(i)
+	workflow, _ := parse(i)
+
+	ans := part2(workflow)
 
 	if ans != 167409079868000 {
 		t.Fatal(ans)
