@@ -4,13 +4,16 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/NicholasMead/go-aoc-23/common"
 	"github.com/NicholasMead/go-aoc-23/common/inputFile"
+	"github.com/NicholasMead/go-aoc-23/y23d02/elves"
 )
 
-var inputPath = "./y23d2/input.txt"
-var samplePath = "./y23d2/sample.txt"
+var inputPath = "./y23d02/input.txt"
+var samplePath = "./y23d02/sample.txt"
 
 func main() {
+	var p1, p2 any = "", ""
 	args := os.Args[1:]
 	path := inputPath
 	if len(args) > 0 {
@@ -24,58 +27,36 @@ func main() {
 		}
 	}
 
-	input := inputFile.ReadInputFile(path)
-	games := []game{}
+	d := common.Timer(func() {
+		input := inputFile.ReadInputFile(path)
+		p1, p2 = part1(input), part2(input)
+	})
 
-	for _, line := range input {
-		g := parseGame(line)
-		games = append(games, g)
-	}
-
-	fmt.Printf("Part 1: %v\n", part1(games))
-	fmt.Printf("Part 2: %v\n", part2(games))
+	fmt.Printf("Part 1: %v\n", p1)
+	fmt.Printf("Part 2: %v\n", p2)
+	fmt.Printf("Time: %vus\n", d.Microseconds())
 }
 
-func part1(input []game) any {
-	cap := cubeSet{12, 13, 14}
+func part1(input []string) any {
+	bag := elves.Bag{Red: 12, Green: 13, Blue: 14}
 	ans := 0
 
-	for _, game := range input {
-		success := true
-		for _, round := range game.rounds {
-			if round.red > cap.red || round.green > cap.green || round.blue > cap.blue {
-				success = false
-				break
-			}
-		}
-		if success {
-			ans += game.num
+	for _, line := range input {
+		game := elves.ParseGame(line)
+		if game.CanPlay(bag) {
+			ans += game.Id
 		}
 	}
 
 	return ans
 }
 
-func part2(input []game) any {
+func part2(input []string) any {
 	ans := 0
 
-	for _, game := range input {
-		min := cubeSet{}
-
-		for _, round := range game.rounds {
-			if round.red > min.red {
-				min.red = round.red
-			}
-			if round.green > min.green {
-				min.green = round.green
-			}
-			if round.blue > min.blue {
-				min.blue = round.blue
-			}
-		}
-
-		pow := min.red * min.green * min.blue
-		ans += pow
+	for _, line := range input {
+		game := elves.ParseGame(line)
+		ans += game.MinimumPlayableBag().Power()
 	}
 
 	return ans
