@@ -15,7 +15,7 @@ type options struct {
 }
 
 func (opts options) getTargetFolder() string {
-	return fmt.Sprintf("./y%vd%v", opts.year-2000, opts.day)
+	return fmt.Sprintf("./y%02dd%02d", opts.year-2000, opts.day)
 }
 
 func applyFlags(opts *options) {
