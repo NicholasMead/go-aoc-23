@@ -85,7 +85,7 @@ func part1(input []string) any {
 
 func part2(input []string) any {
 	lefts, rights := parseLines(input)
-	counts := make(map[int]int)
+	answer := 0
 
 	for l := 0; l < len(lefts); l++ {
 		count := 0
@@ -94,12 +94,7 @@ func part2(input []string) any {
 				count++
 			}
 		}
-		counts[lefts[l]] = count
-	}
-
-	answer := 0
-	for id, count := range counts {
-		answer += id * count
+		answer += lefts[l] * count
 	}
 
 	return answer
